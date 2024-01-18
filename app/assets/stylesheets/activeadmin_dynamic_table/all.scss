@@ -1,0 +1,19 @@
+.dynamic_table_wrapper {
+  position: relative;
+
+  .hidden {
+    display: none;
+  }
+
+  .col-table-preferences {
+    cursor: pointer;
+  }
+
+  .dynamic_table_configuration {
+    position: absolute;
+    background: #fff;
+    padding: 8px;
+    border: 1px solid #c9d0d6;
+    width: max-content;
+  }
+}
