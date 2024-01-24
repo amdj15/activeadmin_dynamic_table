@@ -2,6 +2,10 @@ $(function() {
   const preferencesBtn = $('th.col-table-preferences');
   const tableConfig = $('ul.dynamic_table_configuration');
 
+  if (tableConfig.length) {
+    $('#wrapper').css('display', 'block')
+  }
+
   function parseSearchString(searchString) {
     return searchString.split('&').reduce((acc, keyval) => {
       const [key, value] = keyval.split('=');
@@ -66,4 +70,6 @@ $(function() {
   tableConfig.on('click', function(event) {
     event.stopPropagation();
   });
+
+  $('.dynamic_table th').resizable();
 });

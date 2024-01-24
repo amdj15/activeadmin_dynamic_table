@@ -1,5 +1,6 @@
-.dynamic_table_wrapper {
+.index_as_dynamic_table {
   position: relative;
+  overflow: auto;
 
   .hidden {
     display: none;
@@ -15,5 +16,22 @@
     padding: 8px;
     border: 1px solid #c9d0d6;
     width: max-content;
+  }
+
+  .dynamic_table {
+    table-layout: fixed;
+  }
+
+  th {
+    position: relative;
+
+    .ui-resizable-e {
+      cursor: e-resize;
+      width: 7px;
+      right: -5px;
+      top: 0;
+      height: 100%;
+      position: absolute;
+    }
   }
 }

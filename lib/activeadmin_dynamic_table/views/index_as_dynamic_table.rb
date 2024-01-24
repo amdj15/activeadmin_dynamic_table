@@ -2,6 +2,21 @@
 
 module ActiveAdmin::Views
   class IndexAsDynamicTable < IndexAsTable
+    class IndexDynamicTableFor < IndexTableFor
+      def th(*args, &block)
+        options = default_options.merge(args.extract_options!)
+        title = args[0]
+
+        super options do
+          span title, &block
+        end
+      end
+
+      def default_options
+        super.merge(style: 'width: 100px')
+      end
+    end
+
     def build(page_presenter, collection)
       settings = ActiveadminDynamicTable::SettingStringParser.new(params[:columns])
 
@@ -16,16 +31,18 @@ module ActiveAdmin::Views
         row_class: page_presenter[:row_class]
       }
 
-      div class: 'dynamic_table_wrapper' do
-        table_for collection, table_options do |t|
-          table_config_block = page_presenter.block || default_table
-          instance_exec(t, &table_config_block)
+      table_for collection, table_options do |t|
+        table_config_block = page_presenter.block || default_table
+        instance_exec(t, &table_config_block)
 
-          apply_configuration
-        end
-
-        columns_list
+        apply_configuration
       end
+
+      columns_list
+    end
+
+    def table_for(*args, &block)
+      insert_tag IndexDynamicTableFor, *args, &block
     end
 
     def register_column(*args, &block)
