@@ -8,7 +8,12 @@ module ActiveadminDynamicTable
       return [] if @settings_string.nil?
 
       columns = @settings_string.split(';')
-      columns.map { |name| { column: name.to_sym } }
+
+      columns.map do |col|
+        name, *options = col.split(':')
+
+        ColumnSettings.new(name, options)
+      end
     end
   end
 end
