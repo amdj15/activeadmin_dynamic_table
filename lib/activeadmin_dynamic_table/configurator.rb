@@ -8,13 +8,14 @@ module  ActiveadminDynamicTable
       @api_calls = []
     end
 
-    def register_column(*args, &block)
-      options = args[1]
+    def register_column(method, *args, &block)
+      options = args[1] || args[0]
 
-      default_width = options[:width]
-      config = settings_hash[options[:key]] || ColumnSettings.new(options[:key], ["w#{default_width}"])
+      config = settings_hash[options[:key]] || ColumnSettings.new(options[:key])
+      config.default_width = options[:width]
 
-      api_call = RegisteredColumn.new key: options[:key],
+      api_call = RegisteredColumn.new method: method,
+                                      key: options[:key],
                                       is_default: options[:default],
                                       args: args,
                                       block: block,
@@ -25,7 +26,13 @@ module  ActiveadminDynamicTable
 
     def columns
       applicable_columns.each do |applicable_column|
-        @context.public_send(:column, *applicable_column.args, &applicable_column.block)
+        next @context.id_column *applicable_column.args if applicable_column.method == :id_column
+        next @context.actions(applicable_column.args[1] || applicable_column.args[0]) if applicable_column.method == :actions
+        next @context.index_column *applicable_column.args if applicable_column.method == :index_column
+
+        # next @context.selectable_column *applicable_column.args if applicable_column.method == :selectable_column
+
+        @context.public_send(applicable_column.method, *applicable_column.args, &applicable_column.block)
       end
     end
 
@@ -48,9 +55,9 @@ module  ActiveadminDynamicTable
         args = api_call.args
 
         {
-          label: args[0],
           key: api_call.key,
           selected: selected?(api_call.key),
+          args: args,
         }
       end
     end

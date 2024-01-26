@@ -1,6 +1,7 @@
 $(function() {
   const preferencesBtn = $('th.col-table-preferences');
   const tableConfig = $('ul.dynamic_table_configuration');
+  const columns = $('th[data-column-key]');
 
   if (tableConfig.length) {
     $('#wrapper').css('display', 'block')
@@ -20,8 +21,43 @@ $(function() {
     }, {});
   }
 
-  function toSearchString(params) {
-    return Object.keys(params).map((key) => [key, params[key]].join('=')).join('&')
+  function stringifyParams(params) {
+    const data = filterEmptyKeys(params);
+    const prefix = '?';
+    const searchString = Object.keys(data).map((key) => [key, data[key]].join('=')).join('&');
+
+    return searchString ? prefix + searchString : '';
+  }
+
+  function columnsConfigString(keys, sizes = {}) {
+    const str = keys.map(key => {
+      if (sizes[key]) {
+        return [key, 'w' + sizes[key]].join(':');
+      }
+
+      return key;
+    }).join(';');
+
+    return encodeURIComponent(str);
+  }
+
+  function getSearchParams() {
+    const searchString = decodeURIComponent(window.location.search).slice(1);
+
+    return parseSearchString(searchString);
+  }
+
+  function getColumnsWidths() {
+    return columns.map(function() {
+      const elem = $(this)
+
+      return {
+        width: elem.width(),
+        key: elem.data('column-key'),
+      };
+    })
+    .toArray()
+    .reduce((acc, item) => Object.assign(acc, { [item.key]: item.width }), {});
   }
 
   function filterEmptyKeys(params) {
@@ -46,30 +82,38 @@ $(function() {
 
   document.addEventListener('click', () => {
     if (!tableConfig.length || tableConfig.hasClass('hidden')) {
-      return
+      return;
     }
-
-    const searchString = decodeURIComponent(window.location.search).slice(1);
-    let params = parseSearchString(searchString);
 
     const selected = tableConfig.find('input').filter(function() {
       return $(this).is(':checked');
     }).map(function() {
       return $(this).attr('name');
+    }).toArray();
+
+    const columnSizes = getColumnsWidths();
+    const params = Object.assign(getSearchParams(), {
+      columns: columnsConfigString(selected, columnSizes),
     });
-
-    params.columns = encodeURIComponent(selected.toArray().join(';'))
-    params = filterEmptyKeys(params);
-
-    const nextSearchString = '?' + toSearchString(params);
+    const searchString = stringifyParams(params);
 
     tableConfig.addClass('hidden');
-    window.location.search = nextSearchString;
+    window.location.search = searchString;
   });
 
   tableConfig.on('click', function(event) {
     event.stopPropagation();
   });
 
-  $('.dynamic_table th').resizable();
+  columns.resizable({
+    stop: function() {
+      const columnSizes = getColumnsWidths();
+      const params = Object.assign(getSearchParams(), {
+        columns: columnsConfigString(Object.keys(columnSizes), columnSizes),
+      });
+      const searchString = stringifyParams(params);
+
+      window.history.replaceState({}, undefined, window.location.pathname + searchString);
+    }
+  });
 });

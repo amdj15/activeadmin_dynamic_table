@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module ActiveadminDynamicTable
   class RegisteredColumn
-    attr_reader :key, :args, :block, :config
+    attr_reader :key, :args, :block, :config, :method
 
     def initialize(options)
       @is_default = options[:is_default]
@@ -9,6 +9,7 @@ module ActiveadminDynamicTable
       @args = options[:args]
       @block = options[:block]
       @config = options[:config]
+      @method = options[:method]
     end
 
     def default?
@@ -38,7 +39,11 @@ module ActiveadminDynamicTable
     end
 
     def default_width
-      50
+      @default_width || 50
+    end
+
+    def default_width=(value)
+      @default_width = value
     end
   end
 end

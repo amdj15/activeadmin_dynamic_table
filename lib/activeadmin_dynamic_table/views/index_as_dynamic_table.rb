@@ -9,32 +9,93 @@ module ActiveAdmin::Views
       end
 
       def build_table_header(col)
-        classes = Arbre::HTML::ClassList.new
         sort_key = sortable? && col.sortable? && col.sort_key
         params = request.query_parameters.except :page, :order, :commit, :format
-
-        classes << "sortable" if sort_key
-        classes << "sorted-#{current_sort[1]}" if sort_key && current_sort[0] == sort_key
-        classes << col.html_class
-
-        style = ""
-        options = col.instance_variable_get(:@options)
-        style = "width: #{@configurator.width_for(options[:key])}px" if options[:key].present?
+        options = options_for_col(col, sort_key)
 
         if sort_key
-          th class: classes, style: style do
+          th options do
             span do
               link_to col.pretty_title, params: params, order: "#{sort_key}_#{order_for_sort_key(sort_key)}"
             end
           end
         else
-          th class: classes, style: style do
+          th options do
             span do
               col.pretty_title
             end
           end
         end
       end
+
+      def options_for_col(col, sort_key)
+        classes = Arbre::HTML::ClassList.new
+        classes << "sortable" if sort_key
+        classes << "sorted-#{current_sort[1]}" if sort_key && current_sort[0] == sort_key
+        classes << col.html_class
+
+        options = col.instance_variable_get(:@options)
+        style = options[:style] || ''
+        style = "width: #{@configurator.width_for(options[:key])}px" if options[:key].present?
+
+        {
+          class: classes,
+          style: style,
+          'data-column-key': options[:key],
+        }
+      end
+
+      # Display a column for the id
+      def id_column(*args)
+        raise "#{resource_class.name} has no primary_key!" unless resource_class.primary_key
+        data = args[1] || args[0]
+
+        options = {
+          sortable: resource_class.primary_key,
+          'data-column-key': data[:key],
+          **data,
+        }
+
+        column(resource_class.human_attribute_name(resource_class.primary_key), options) do |resource|
+          if controller.action_methods.include?("show")
+            link_to resource.id, resource_path(resource), class: "resource_id_link"
+          elsif controller.action_methods.include?("edit")
+            link_to resource.id, edit_resource_path(resource), class: "resource_id_link"
+          else
+            resource.id
+          end
+        end
+      end
+
+      def index_column(*args)
+        data = args[1] || args[0]
+        start_value = data.delete(:start_value) || 1
+
+        options = {
+          class: "col-index",
+          sortable: false,
+          **data,
+        }
+
+        column "#", options do |resource|
+          @collection.offset_value + @collection.index(resource) + start_value
+        end
+      end
+
+      # def selectable_column(*args)
+      #   return unless active_admin_config.batch_actions.any?
+      #   data = args[1] || args[0]
+
+      #   options = {
+      #     class: "col-selectable",
+      #     sortable: false,
+      #     **data,
+      #   }
+
+      #   column resource_selection_toggle_cell, options do |resource|
+      #     resource_selection_cell resource
+      #   end
+      # end
     end
 
     def build(page_presenter, collection)
@@ -65,8 +126,24 @@ module ActiveAdmin::Views
     end
 
     def register_column(*args, &block)
-      @configurator.register_column(*args, &block)
+      @configurator.register_column(:column, *args, &block)
     end
+
+    def register_id_column(*args, &block)
+      @configurator.register_column(:id_column, *args, &block)
+    end
+
+    def register_index_column(*args, &block)
+      @configurator.register_column(:index_column, *args, &block)
+    end
+
+    def register_actions(*args, &block)
+      @configurator.register_column(:actions, *args, &block)
+    end
+
+    # def register_selectable_column(*args, &block)
+    #   @configurator.register_column(:selectable_column, *args, &block)
+    # end
 
     private
 
@@ -75,20 +152,25 @@ module ActiveAdmin::Views
     end
 
     def apply_configuration
-      id_column
       apply_columns
-      actions
-
-      column "⚙️", class: 'col-table-preferences', & proc { '' }
+      column "⚙️", style: "width: 30px", class: 'col-table-preferences', & proc { '' }
     end
 
     def columns_list
       ul class: 'dynamic_table_configuration hidden' do
         @configurator.registered_columns.each do |col|
+          args = col[:args]
+
+          options = args.extract_options!
+          title = args[0]
+          data = args[1] || args[0]
+
+          column = ::ActiveAdmin::Views::TableFor::Column.new(title, data, @resource_class, options)
+
           li do
             label do
               input type: :checkbox, name: col[:key], checked: col[:selected]
-              span col[:label]
+              span column.pretty_title
             end
           end
         end
