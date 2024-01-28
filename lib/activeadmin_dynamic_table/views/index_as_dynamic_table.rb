@@ -32,6 +32,7 @@ module ActiveAdmin::Views
         classes = Arbre::HTML::ClassList.new
         classes << "sortable" if sort_key
         classes << "sorted-#{current_sort[1]}" if sort_key && current_sort[0] == sort_key
+        classes << "reorder"
         classes << col.html_class
 
         options = col.instance_variable_get(:@options)
@@ -81,21 +82,6 @@ module ActiveAdmin::Views
           @collection.offset_value + @collection.index(resource) + start_value
         end
       end
-
-      # def selectable_column(*args)
-      #   return unless active_admin_config.batch_actions.any?
-      #   data = args[1] || args[0]
-
-      #   options = {
-      #     class: "col-selectable",
-      #     sortable: false,
-      #     **data,
-      #   }
-
-      #   column resource_selection_toggle_cell, options do |resource|
-      #     resource_selection_cell resource
-      #   end
-      # end
     end
 
     def build(page_presenter, collection)
@@ -140,10 +126,6 @@ module ActiveAdmin::Views
     def register_actions(*args, &block)
       @configurator.register_column(:actions, *args, &block)
     end
-
-    # def register_selectable_column(*args, &block)
-    #   @configurator.register_column(:selectable_column, *args, &block)
-    # end
 
     private
 

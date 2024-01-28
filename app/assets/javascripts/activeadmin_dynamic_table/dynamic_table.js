@@ -1,7 +1,9 @@
 $(function() {
   const preferencesBtn = $('th.col-table-preferences');
   const tableConfig = $('ul.dynamic_table_configuration');
-  const columns = $('th[data-column-key]');
+
+  const columnsPattern = 'th[data-column-key]';
+  const columns = $(columnsPattern);
 
   if (tableConfig.length) {
     $('#wrapper').css('display', 'block')
@@ -91,9 +93,15 @@ $(function() {
       return $(this).attr('name');
     }).toArray();
 
+    const current = $(columnsPattern).map(function() {
+      return $(this).data('column-key');
+    }).toArray().filter(key => selected.includes(key));
+
+    const diff = selected.filter(key => !current.includes(key));
+
     const columnSizes = getColumnsWidths();
     const params = Object.assign(getSearchParams(), {
-      columns: columnsConfigString(selected, columnSizes),
+      columns: columnsConfigString(current.concat(diff), columnSizes),
     });
     const searchString = stringifyParams(params);
 
@@ -111,9 +119,26 @@ $(function() {
       const params = Object.assign(getSearchParams(), {
         columns: columnsConfigString(Object.keys(columnSizes), columnSizes),
       });
-      const searchString = stringifyParams(params);
 
-      window.history.replaceState({}, undefined, window.location.pathname + searchString);
-    }
+      const searchString = stringifyParams(params);
+      window.location.search = searchString;
+    },
+  });
+
+  $('.index_as_dynamic_table thead tr').sortable({
+    axis: 'x',
+    update: function() {
+      const columnSizes = getColumnsWidths();
+      const keys = $(columnsPattern).map(function() {
+        return $(this).data('column-key');
+      }).toArray();
+
+      const params = Object.assign(getSearchParams(), {
+        columns: columnsConfigString(keys, columnSizes),
+      });
+
+      const searchString = stringifyParams(params);
+      window.location.search = searchString;
+    },
   });
 });
