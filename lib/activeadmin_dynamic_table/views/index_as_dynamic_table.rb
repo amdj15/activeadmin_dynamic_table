@@ -21,9 +21,7 @@ module ActiveAdmin::Views
           end
         else
           th options do
-            span do
-              col.pretty_title
-            end
+            span col.pretty_title
           end
         end
       end
@@ -44,6 +42,21 @@ module ActiveAdmin::Views
           style: style,
           'data-column-key': options[:key],
         }
+      end
+
+      # Display a column for checkbox
+      def selectable_column
+        return unless active_admin_config.batch_actions.any?
+
+        options = {
+          style: "width: 30px",
+          class: "col-selectable",
+          sortable: false,
+        }
+
+        column resource_selection_toggle_cell, options do |resource|
+          resource_selection_cell resource
+        end
       end
 
       # Display a column for the id
