@@ -7,7 +7,9 @@
   }
 
   .col-table-preferences {
-    cursor: pointer;
+    span {
+      cursor: pointer;
+    }
   }
 
   .dynamic_table_configuration {
