@@ -1,6 +1,6 @@
 # ActiveadminDynamicTable
 
-This is an [ActiveAdmin](https://github.com/activeadmin/activeadmin) extansion which allows to manage index table columns from the activeadmin UI.
+This is an [ActiveAdmin](https://github.com/activeadmin/activeadmin) extension that allows managing index table columns from the activeadmin UI.
 
 ## Goals
 - Show/hide table columns from UI
@@ -66,7 +66,7 @@ All other options are the same as for `register_column`
 Method follows standard `column` dsl but also requires to provide at least `key` among options.
 All other options are the same as for `register_column`
 
-Expample:
+Example:
 
 ```ruby
 index as: :dynamic_table do
