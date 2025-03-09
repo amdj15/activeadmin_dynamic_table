@@ -54,12 +54,12 @@ $(function() {
       const elem = $(this)
 
       return {
-        width: elem.width(),
+        width: elem.outerWidth(),
         key: elem.data('column-key'),
       };
     })
-    .toArray()
-    .reduce((acc, item) => Object.assign(acc, { [item.key]: item.width }), {});
+      .toArray()
+      .reduce((acc, item) => Object.assign(acc, { [item.key]: item.width }), {});
   }
 
   function filterEmptyKeys(params) {
