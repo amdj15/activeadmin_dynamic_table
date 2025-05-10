@@ -27,10 +27,8 @@ module  ActiveadminDynamicTable
     def columns
       applicable_columns.each do |applicable_column|
         next @context.id_column *applicable_column.args if applicable_column.method == :id_column
-        next @context.actions(applicable_column.args[1] || applicable_column.args[0]) if applicable_column.method == :actions
+        next @context.actions(applicable_column.args[1] || applicable_column.args[0], &applicable_column.block) if applicable_column.method == :actions
         next @context.index_column *applicable_column.args if applicable_column.method == :index_column
-
-        # next @context.selectable_column *applicable_column.args if applicable_column.method == :selectable_column
 
         @context.public_send(applicable_column.method, *applicable_column.args, &applicable_column.block)
       end

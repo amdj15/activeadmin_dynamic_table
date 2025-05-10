@@ -12,14 +12,6 @@
     }
   }
 
-  .dynamic_table_configuration {
-    position: absolute;
-    background: #fff;
-    padding: 8px;
-    border: 1px solid #c9d0d6;
-    width: max-content;
-  }
-
   .dynamic_table {
     table-layout: fixed;
     width: min-content;
@@ -41,4 +33,14 @@
       position: absolute;
     }
   }
+}
+
+.dynamic_table_configuration {
+  position: absolute;
+  background: #fff;
+  padding: 8px;
+  border: 1px solid #c9d0d6;
+  width: max-content;
+  z-index: 10;
+  list-style: none;
 }
